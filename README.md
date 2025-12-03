@@ -1,1 +1,191 @@
-# Jvanseni.github.io
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ular Lapar - Game Klasik Snake</title>
+    
+    <style>
+        /* CSS untuk Tampilan Game */
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #333;
+            color: white;
+        }
+
+        h1 {
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+
+        /* Area Canvas tempat game dimainkan */
+        #gameCanvas {
+            border: 5px solid #4CAF50;
+            background-color: #222;
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.5);
+            margin-bottom: 20px;
+        }
+
+        .controls {
+            margin-top: 10px;
+            text-align: center;
+        }
+
+        .message {
+            font-size: 1.5em;
+            color: #FFEB3B;
+            margin-bottom: 10px;
+            min-height: 30px; /* Jaga agar tinggi tidak berubah */
+        }
+        
+        .score-display {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #f0f0f0;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>Ular Lapar (Snake Klasik)</h1>
+    <p class="score-display">Skor: <span id="score">0</span></p>
+
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+    <div class="message" id="gameMessage">
+        Tekan Tombol Panah (atau WASD) untuk Mulai!
+    </div>
+
+    <button id="resetButton" class="hidden">Main Lagi</button>
+    
+    <div class="controls">
+        <p>Kontrol: Tombol Panah atau W/A/S/D</p>
+    </div>
+
+    <script>
+        // --- Bagian JavaScript (Logika Game) ---
+        
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreDisplay = document.getElementById('score');
+        const messageDisplay = document.getElementById('gameMessage');
+        const resetButton = document.getElementById('resetButton');
+
+        // Konstanta Game
+        const TILE_SIZE = 20; // Ukuran satu kotak (petak)
+        const GRID_SIZE = canvas.width / TILE_SIZE; // Jumlah kotak dalam satu baris/kolom
+        let gameSpeed = 100; // Kecepatan game (milidetik per frame)
+
+        // Variabel Game
+        let snake = [];
+        let food = {};
+        let dx = 0; // Perubahan X (horizontal)
+        let dy = 0; // Perubahan Y (vertikal)
+        let score = 0;
+        let gameLoopInterval;
+        let isGameRunning = false;
+        let changingDirection = false;
+
+        // --- Fungsi Utama ---
+
+        function startGame() {
+            // Inisialisasi Ular di tengah
+            snake = [
+                { x: Math.floor(GRID_SIZE / 2), y: Math.floor(GRID_SIZE / 2) },
+                { x: Math.floor(GRID_SIZE / 2) - 1, y: Math.floor(GRID_SIZE / 2) },
+                { x: Math.floor(GRID_SIZE / 2) - 2, y: Math.floor(GRID_SIZE / 2) }
+            ];
+            
+            // Atur arah awal ke kanan
+            dx = 1;
+            dy = 0;
+            score = 0;
+            scoreDisplay.textContent = score;
+            isGameRunning = true;
+            changingDirection = false;
+            
+            messageDisplay.textContent = 'Game Sedang Berlangsung...';
+            resetButton.classList.add('hidden');
+
+            // Hapus interval lama jika ada
+            if (gameLoopInterval) {
+                clearInterval(gameLoopInterval);
+            }
+
+            // Mulai Game Loop
+            createFood();
+            gameLoopInterval = setInterval(mainGameLoop, gameSpeed);
+        }
+
+        function endGame(message) {
+            clearInterval(gameLoopInterval);
+            isGameRunning = false;
+            messageDisplay.textContent = message;
+            resetButton.classList.remove('hidden');
+        }
+
+        function mainGameLoop() {
+            if (!isGameRunning) return;
+
+            changingDirection = false;
+            
+            // Pergerakan Ular
+            moveSnake();
+            
+            // Deteksi Tabrakan
+            if (checkCollision()) {
+                endGame(`GAME OVER! Skor Akhir Anda: ${score}`);
+                return;
+            }
+
+            // Render/Gambar Ular dan Makanan
+            drawGame();
+        }
+
+        // --- Fungsi Pergerakan & Penggambaran ---
+
+        function moveSnake() {
+            // Buat kepala ular baru berdasarkan arah
+            const head = { 
+                x: snake[0].x + dx, 
+                y: snake[0].y + dy 
+            };
+            
+            // Tambahkan kepala baru ke depan array
+            snake.unshift(head);
+
+            // Cek apakah ular makan makanan
+            if (head.x === food.x && head.y === food.y) {
+                score += 10;
+                scoreDisplay.textContent = score;
+                // Jangan hapus ekor (ular memanjang)
+                createFood();
+            } else {
+                // Hapus ekor (ular bergerak normal)
+                snake.pop();
+            }
+        }
+
+        function drawGame() {
+            // 1. Bersihkan Canvas
+            ctx.fillStyle = '#222';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 2. Gambar Makanan
+            ctx.fillStyle = '#FF4136'; // Warna Merah
+            ctx.fillRect(food.x * TILE_SIZE, food.y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+
+            // 3. Gambar Ular
+            snake.forEach((segment, index) => {
+                // Kepala berwarna berbeda
+                ctx.fillStyle = index === 0 ? '#111' : '#4CAF50'; 
+                ctx.fillRect(segment.x * TILE_SIZE,
