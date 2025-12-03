@@ -3,6 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Klik Cepat! Game Penuh</title>
+    
+    <style>
+        /* * Bagian CSS (style.css sebelumnya)
+         */
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            text-align: center;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        .info {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        #clickButton {
+            padding: 15px 30px;
+            font-size: 1.5em;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.2s;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        #clickButton:hover:not(:disabled) {
+            background-color: #45a049;
+        }
+
+        #clickButton:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #message {
+            margin-top: 20px;
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #e91e63;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #resetButton {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="container">
+        <h1>⚡ Klik Cepat! ⚡</h1>
+        <p>Klik tombol di bawah sebanyak mungkin dalam 5 detik.</p>
+
+        <div class="info">
+            <p>Skor: <span id="score">0</span></p>
+            <p>Waktu Tersisa: <span id="timer">5.00</span>s</p>
+        </div>
+
+        <button id="clickButton">Klik Saya!</button>
+        
+        <div id="message" class="hidden"></div>
+        <button id="resetButton" class="hidden">Main Lagi</button>
+    </div>
+
+    <script>
+        /*
+         * Bagian JavaScript (script.js sebelumnya)
+         */
+        
+        // Ambil elemen HTML
+        const scoreElement = document.getElementById('score');
+        const timerElement = document.getElementById('timer');
+        const clickButton = document.getElementById('clickButton');
+        const messageElement = document.getElementById('message');
+        const resetButton = document.getElementById('resetButton');
+
+        // Variabel Game
+        let score = 0;
+        const TIME_LIMIT = 5; // Batas waktu dalam detik
+        let timeLeft = TIME_LIMIT;
+        let gameInterval;
+        let isGameActive = false;
+
+        // --- Fungsi Utama Game ---
+
+        function startGame() {
+            // Reset status
+            score = 0;
+            timeLeft = TIME_LIMIT;
+            isGameActive = true;
+            scoreElement.textContent = score;
+            timerElement.textContent = timeLeft.toFixed(2);
+            clickButton.disabled = false;
+            clickButton.textContent = "KLIK SAYA!";
+            messageElement.classList.add('hidden');
+            resetButton.classList.add('hidden');
+
+            // Mulai Interval Timer
+            let startTime = Date.now();
+            gameInterval = setInterval(() => {
+                const elapsedTime = (Date.now() - startTime) / 1000;
+                timeLeft = TIME_LIMIT - elapsedTime;
+
+                if (timeLeft <= 0) {
+                    endGame();
+                } else {
+                    // Pastikan waktu tidak negatif
+                    timerElement.textContent = Math.max(0, timeLeft).toFixed(2);
+                }
+            }, 10); // Perbarui setiap 10 milidetik untuk tampilan yang lebih mulus
+        }
+
+        function endGame() {
+            clearInterval(gameInterval);
+            isGameActive = false;
+            clickButton.disabled = true;
+            clickButton.textContent = "WAKTU HABIS!";
+            timerElement.textContent = "0.00"; // Pastikan waktu di set ke nol
+
+            // Tampilkan pesan hasil
+            messageElement.textContent = `Game Selesai! Skor Anda: ${score} klik.`;
+            messageElement.classList.remove('hidden');
+            resetButton.classList.remove('hidden');
+        }
+
+        function handleButtonClick() {
+            if (!isGameActive) {
+                // Jika game belum mulai, anggap klik pertama sebagai awal game
+                startGame();
+            }
+            
+            if (isGameActive) {
+                score++;
+                scoreElement.textContent = score;
+            }
+        }
+
+        // --- Event Listener ---
+        clickButton.addEventListener('click', handleButtonClick);
+        resetButton.addEventListener('click', startGame);
+
+        // --- Inisialisasi Awal ---
+        // Atur tampilan awal sebelum klik pertama.
+        function initializeGame() {
+            scoreElement.textContent = 0;
+            timerElement.textContent = TIME_LIMIT.toFixed(2);
+            clickButton.disabled = false; // Tombol aktif untuk memulai
+            resetButton.classList.add('hidden');
+            messageElement.textContent = "Tekan tombol 'Klik Saya!' untuk memulai game!";
+            messageElement.classList.remove('hidden');
+        }
+
+        // Panggil fungsi inisialisasi ketika halaman dimuat
+        document.addEventListener('DOMContentLoaded', initializeGame);
+    </script>
+</body>
+</html>!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Klik Cepat! Game</title>
     <link rel="stylesheet" href="style.css">
 </head>
